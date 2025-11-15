@@ -1,16 +1,15 @@
-name: Deploy to Azure Container Apps
+name: Build and Deploy to Azure Container Apps
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Azure Login
@@ -18,42 +17,33 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Build and Push log-api
-        uses: azure/acr-build@v1
-        with:
-          service_principal_id: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
-          service_principal_password: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
-          tenant: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
-          registry: ${{ secrets.ACR_LOGIN_SERVER }}
-          repository: log-api
-          image: log-api:latest
-          dockerfile: ./log-api/Dockerfile
+      - name: Login to ACR
+        run: |
+          az acr login --name cloudlogacr123
 
-      - name: Build and Push log-worker
-        uses: azure/acr-build@v1
-        with:
-          service_principal_id: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
-          service_principal_password: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
-          tenant: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
-          registry: ${{ secrets.ACR_LOGIN_SERVER }}
-          repository: log-worker
-          image: log-worker:latest
-          dockerfile: ./log-worker/Dockerfile
+      - name: Build log-api
+        run: |
+          docker build -t cloudlogacr123.azurecr.io/log-api:latest ./log-api
 
-      - name: Deploy log-api (container apps)
+      - name: Build log-worker
+        run: |
+          docker build -t cloudlogacr123.azurecr.io/log-worker:latest ./log-worker
+
+      - name: Push Images
+        run: |
+          docker push cloudlogacr123.azurecr.io/log-api:latest
+          docker push cloudlogacr123.azurecr.io/log-worker:latest
+
+      - name: Deploy log-api
         uses: azure/container-apps-deploy-action@v1
         with:
-          tenantId: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
-          subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
-          resourceGroup: cloudlog-rg
           containerAppName: log-api
-          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/log-api:latest
+          resourceGroup: cloudlog-rg
+          imageToDeploy: cloudlogacr123.azurecr.io/log-api:latest
 
       - name: Deploy log-worker
         uses: azure/container-apps-deploy-action@v1
         with:
-          tenantId: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
-          subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
-          resourceGroup: cloudlog-rg
           containerAppName: log-worker
-          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/log-worker:latest
+          resourceGroup: cloudlog-rg
+          imageToDeploy: cloudlogacr123.azurecr.io/log-worker:latest
