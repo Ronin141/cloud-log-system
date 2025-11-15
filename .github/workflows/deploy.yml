@@ -1,0 +1,59 @@
+name: Deploy to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and Push log-api
+        uses: azure/acr-build@v1
+        with:
+          service_principal_id: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
+          service_principal_password: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
+          tenant: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          repository: log-api
+          image: log-api:latest
+          dockerfile: ./log-api/Dockerfile
+
+      - name: Build and Push log-worker
+        uses: azure/acr-build@v1
+        with:
+          service_principal_id: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
+          service_principal_password: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
+          tenant: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          repository: log-worker
+          image: log-worker:latest
+          dockerfile: ./log-worker/Dockerfile
+
+      - name: Deploy log-api (container apps)
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          tenantId: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
+          subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
+          resourceGroup: cloudlog-rg
+          containerAppName: log-api
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/log-api:latest
+
+      - name: Deploy log-worker
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          tenantId: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
+          subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
+          resourceGroup: cloudlog-rg
+          containerAppName: log-worker
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/log-worker:latest
