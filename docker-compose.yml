@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  log-api:
+    build: ./log-api
+    ports:
+      - "8080:8080"
+    volumes:
+      - logdata:/data
+
+  log-worker:
+    build: ./log-worker
+    volumes:
+      - logdata:/data
+
+volumes:
+  logdata:
