@@ -34,7 +34,7 @@ jobs:
           docker push cloudlogacr123.azurecr.io/log-api:latest
           docker push cloudlogacr123.azurecr.io/log-worker:latest
 
-      # ⭐⭐  STEP นี้เพิ่มเข้ามา ตรงนี้เลย ⭐⭐
+      # ⭐⭐ STEP: Configure registry for ACR pulls ⭐⭐
       - name: Configure Container Apps registry
         run: |
           USER=$(az acr credential show -n cloudlogacr123 --query username -o tsv)
@@ -54,16 +54,20 @@ jobs:
             --username $USER \
             --password $PASS
 
+      # ⭐⭐ DEPLOY log-api ⭐⭐
       - name: Deploy log-api
         uses: azure/container-apps-deploy-action@v1
         with:
           containerAppName: log-api
           resourceGroup: cloudlog-rg
+          environment: log-api-env           # <---- สำคัญที่สุด
           imageToDeploy: cloudlogacr123.azurecr.io/log-api:latest
 
+      # ⭐⭐ DEPLOY log-worker ⭐⭐
       - name: Deploy log-worker
         uses: azure/container-apps-deploy-action@v1
         with:
           containerAppName: log-worker
           resourceGroup: cloudlog-rg
+          environment: log-api-env           # <---- ใส่ตรงนี้เหมือนกัน
           imageToDeploy: cloudlogacr123.azurecr.io/log-worker:latest
