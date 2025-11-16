@@ -33,7 +33,8 @@ jobs:
         with:
           context: ./log-api
           push: true
-          tags: cloudlogacr123.azurecr.io/log-api:latest
+          tags: |
+            cloudlogacr123.azurecr.io/log-api:${{ github.sha }}
 
       # Build and push log-worker
       - name: Build log-worker
@@ -41,7 +42,7 @@ jobs:
         with:
           context: ./log-worker
           push: true
-          tags: cloudlogacr123.azurecr.io/log-worker:latest
+          tags: cloudlogacr123.azurecr.io/log-worker:${{ github.sha }}
 
       # Register ACR creds in Container Apps (1 ครั้งต่อ deploy)
       - name: Configure Container Apps registry
@@ -70,7 +71,7 @@ jobs:
           containerAppName: log-api
           resourceGroup: cloudlog-rg
           containerAppEnvironment: cloudlog-env
-          imageToDeploy: cloudlogacr123.azurecr.io/log-api:latest
+          imageToDeploy: cloudlogacr123.azurecr.io/log-api:${{ github.sha }}
 
       - name: Deploy log-worker
         uses: azure/container-apps-deploy-action@v1
@@ -78,4 +79,4 @@ jobs:
           containerAppName: log-worker
           resourceGroup: cloudlog-rg
           containerAppEnvironment: cloudlog-env
-          imageToDeploy: cloudlogacr123.azurecr.io/log-worker:latest
+          imageToDeploy: cloudlogacr123.azurecr.io/log-worker:${{ github.sha }}
