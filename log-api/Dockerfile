@@ -2,6 +2,9 @@ FROM golang:1.24 AS builder
 
 WORKDIR /app
 
+# ปิด CGO และระบุ target OS/ARCH
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
