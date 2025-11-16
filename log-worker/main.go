@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
@@ -31,10 +32,9 @@ func getQueuePath() string {
 func processQueue() {
 	filePath := getQueuePath()
 
-	// ใช้ CREATE เพื่อไม่ให้ error ตอนไฟล์ยังไม่เกิดขึ้น
 	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		log.Println("worker: cannot open queue:", err)
+		log.Println("worker cannot open file:", err)
 		return
 	}
 	defer f.Close()
@@ -57,7 +57,6 @@ func processQueue() {
 		}
 	}
 
-	// Clear file โดยไม่ลบไฟล์
 	f.Truncate(0)
 	f.Seek(0, 0)
 }
@@ -65,7 +64,16 @@ func processQueue() {
 func main() {
 	log.Println("Worker started...")
 
-	// Loop ตลอดแบบไม่ทำให้ probe ตีเป็น unhealthy
+	// 🔥 Health Check Endpoint (เพื่อให้ Startup Probe ผ่าน)
+	go func() {
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(200)
+			w.Write([]byte("ok"))
+		})
+		http.ListenAndServe(":8080", nil)
+	}()
+
+	// 🔥 Worker loop
 	for {
 		processQueue()
 		time.Sleep(2 * time.Second)
