@@ -60,7 +60,7 @@ jobs:
         with:
           containerAppName: log-api
           resourceGroup: cloudlog-rg
-          environment: cloudlog-env           # <---- สำคัญที่สุด
+          environmentId: /subscriptions/802b8980-ee21-4f04-9652-10d4e72375f0/resourceGroups/cloudlog-rg/providers/Microsoft.App/managedEnvironments/cloudlog-env
           imageToDeploy: cloudlogacr123.azurecr.io/log-api:latest
 
       # ⭐⭐ DEPLOY log-worker ⭐⭐
@@ -69,5 +69,5 @@ jobs:
         with:
           containerAppName: log-worker
           resourceGroup: cloudlog-rg
-          environment: cloudlog-env          # <---- ใส่ตรงนี้เหมือนกัน
+          environmentId: /subscriptions/802b8980-ee21-4f04-9652-10d4e72375f0/resourceGroups/cloudlog-rg/providers/Microsoft.App/managedEnvironments/cloudlog-env
           imageToDeploy: cloudlogacr123.azurecr.io/log-worker:latest
