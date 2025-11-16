@@ -16,50 +16,58 @@ type LogEntry struct {
 }
 
 func getQueuePath() string {
-	// default path for container
 	path := "/data/log_queue.jsonl"
 	dir := "/data"
 
-	// Windows dev mode
 	if os.PathSeparator == '\\' {
 		dir = "../data"
 		path = "../data/log_queue.jsonl"
 	}
 
-	// ALWAYS create directory
 	os.MkdirAll(dir, 0755)
-
 	return path
+}
+
+func processQueue() {
+	filePath := getQueuePath()
+
+	// ใช้ CREATE เพื่อไม่ให้ error ตอนไฟล์ยังไม่เกิดขึ้น
+	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		log.Println("worker: cannot open queue:", err)
+		return
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	var entries []LogEntry
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		var entry LogEntry
+		if err := json.Unmarshal([]byte(line), &entry); err == nil {
+			entries = append(entries, entry)
+		}
+	}
+
+	if len(entries) > 0 {
+		for _, e := range entries {
+			log.Printf("[PROCESS] %s | %s | %s\n", e.Timestamp, e.Service, e.Message)
+		}
+	}
+
+	// Clear file โดยไม่ลบไฟล์
+	f.Truncate(0)
+	f.Seek(0, 0)
 }
 
 func main() {
 	log.Println("Worker started...")
 
+	// Loop ตลอดแบบไม่ทำให้ probe ตีเป็น unhealthy
 	for {
-		filePath := getQueuePath()
-
-		f, err := os.Open(filePath)
-		if err != nil {
-			time.Sleep(3 * time.Second)
-			continue
-		}
-
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			line := scanner.Text()
-
-			var entry LogEntry
-			json.Unmarshal([]byte(line), &entry)
-
-			// Processing logic (สัปดาห์หน้าเก็บ CosmosDB)
-			log.Printf("[PROCESS] %s | %s | %s\n", entry.Timestamp, entry.Service, entry.Message)
-		}
-
-		f.Close()
-
-		// clear file
-		os.Remove(filePath)
-
-		time.Sleep(3 * time.Second)
+		processQueue()
+		time.Sleep(2 * time.Second)
 	}
 }
