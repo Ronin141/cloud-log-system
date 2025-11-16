@@ -16,15 +16,18 @@ type LogEntry struct {
 }
 
 func getQueuePath() string {
-	// default container path (when running in docker)
+	// default path for container
 	path := "/data/log_queue.jsonl"
+	dir := "/data"
 
-	// for local dev on Windows (air), move file to project root: ../data/
+	// Windows dev mode
 	if os.PathSeparator == '\\' {
-		// go up one directory (from log-api to project root)
-		os.MkdirAll("../data", 0755)
+		dir = "../data"
 		path = "../data/log_queue.jsonl"
 	}
+
+	// ALWAYS create directory
+	os.MkdirAll(dir, 0755)
 
 	return path
 }
