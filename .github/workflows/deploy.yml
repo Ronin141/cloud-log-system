@@ -12,29 +12,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # Login Azure
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # Enable buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Login ACR
       - name: Login to ACR
         run: |
           az acr login --name cloudlogacr123
 
+      # Build and push log-api
       - name: Build log-api
-        run: |
-          docker build -t cloudlogacr123.azurecr.io/log-api:latest ./log-api
+        uses: docker/build-push-action@v5
+        with:
+          context: ./log-api
+          push: true
+          tags: cloudlogacr123.azurecr.io/log-api:latest
 
+      # Build and push log-worker
       - name: Build log-worker
-        run: |
-          docker build -t cloudlogacr123.azurecr.io/log-worker:latest ./log-worker
+        uses: docker/build-push-action@v5
+        with:
+          context: ./log-worker
+          push: true
+          tags: cloudlogacr123.azurecr.io/log-worker:latest
 
-      - name: Push Images
-        run: |
-          docker push cloudlogacr123.azurecr.io/log-api:latest
-          docker push cloudlogacr123.azurecr.io/log-worker:latest
-
-      # ⭐⭐ STEP: Configure registry for ACR pulls ⭐⭐
+      # Register ACR creds in Container Apps (1 ครั้งต่อ deploy)
       - name: Configure Container Apps registry
         run: |
           USER=$(az acr credential show -n cloudlogacr123 --query username -o tsv)
@@ -54,6 +63,7 @@ jobs:
             --username $USER \
             --password $PASS
 
+      # Deploy Container Apps
       - name: Deploy log-api
         uses: azure/container-apps-deploy-action@v1
         with:
