@@ -54,20 +54,18 @@ jobs:
             --username $USER \
             --password $PASS
 
-      # ⭐⭐ DEPLOY log-api ⭐⭐
       - name: Deploy log-api
         uses: azure/container-apps-deploy-action@v1
         with:
           containerAppName: log-api
           resourceGroup: cloudlog-rg
-          environmentId: /subscriptions/802b8980-ee21-4f04-9652-10d4e72375f0/resourceGroups/cloudlog-rg/providers/Microsoft.App/managedEnvironments/cloudlog-env
+          containerAppEnvironment: cloudlog-env
           imageToDeploy: cloudlogacr123.azurecr.io/log-api:latest
 
-      # ⭐⭐ DEPLOY log-worker ⭐⭐
       - name: Deploy log-worker
         uses: azure/container-apps-deploy-action@v1
         with:
           containerAppName: log-worker
           resourceGroup: cloudlog-rg
-          environmentId: /subscriptions/802b8980-ee21-4f04-9652-10d4e72375f0/resourceGroups/cloudlog-rg/providers/Microsoft.App/managedEnvironments/cloudlog-env
+          containerAppEnvironment: cloudlog-env
           imageToDeploy: cloudlogacr123.azurecr.io/log-worker:latest
