@@ -94,25 +94,17 @@ API pushes logs to queue instantly → zero backpressure.
 
 ## 📁 Project Structure
 
-    cloud-logging-platform/
+    cloud-log-system/
     │
     ├── api/
     │   ├── main.go
-    │   ├── queue.go
-    │   ├── handlers.go
     │   ├── Dockerfile
-    │   └── app.yaml
     │
     ├── worker/
     │   ├── worker.go
-    │   ├── queue.go
-    │   ├── loganalytics.go
     │   ├── Dockerfile
-    │   └── app.yaml
     │
-    └── infra/
-        ├── main.bicep
-        └── containerapps.env
+    └── README.md
 
 ------------------------------------------------------------------------
 
