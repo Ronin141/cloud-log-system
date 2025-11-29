@@ -61,19 +61,19 @@ API pushes logs to queue instantly → zero backpressure.
 
 ### ✔ Auto‑scaling
 
--   API scales by HTTP load\
+-   API scales by HTTP load
 -   Worker scales by queue depth
 
 ### ✔ Secure by Design
 
--   Managed Identity\
--   No secrets stored in code\
+-   Managed Identity
+-   No secrets stored in code
 -   Optional Entra ID auth
 
 ### ✔ Deep Observability
 
--   Log Analytics (KQL)\
--   Alerts\
+-   Log Analytics (KQL)
+-   Alerts
 -   Dashboarding
 
 ------------------------------------------------------------------------
@@ -171,8 +171,8 @@ for {
 
 ### Key Behavior
 
--   Infinite worker loop (no HTTP server)\
--   No port exposed\
+-   Infinite worker loop (no HTTP server)
+-   No port exposed
 -   Pure background processing
 
 ------------------------------------------------------------------------
@@ -256,16 +256,16 @@ az containerapp logs show   -n go-log-worker   -g cloudlog-rg   --type system --
 
 ## 📌 Future Enhancements
 
--   Add DLQ\
--   OpenTelemetry\
--   Retry policies\
+-   Add DLQ
+-   OpenTelemetry
+-   Retry policies
 -   Batch ingestion to Log Analytics\
 -   Blob archival
 
 ------------------------------------------------------------------------
 
 ## 👤 Author
-
-Cloud Engineer / DevOps Engineer\
-Golang-based Logging Architecture\
+Tatsn Limsodsai
+Cloud Engineer / DevOps Engineer
+Golang-based Logging Architecture
 Designed, built, and deployed by : Tatsn Limsodsai
